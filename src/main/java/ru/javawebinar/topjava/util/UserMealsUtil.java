@@ -3,13 +3,16 @@ package ru.javawebinar.topjava.util;
 import ru.javawebinar.topjava.model.UserMeal;
 import ru.javawebinar.topjava.model.UserMealWithExcess;
 
+import java.lang.reflect.Field;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.Month;
 import java.util.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class UserMealsUtil {
     public static void main(String[] args) {
@@ -24,6 +27,12 @@ public class UserMealsUtil {
 
         List<UserMealWithExcess> mealsTo = filteredByCycles(meals, LocalTime.of(7, 0), LocalTime.of(12, 0), 2000);
         mealsTo.forEach(System.out::println);
+
+        List<UserMealWithExcess> mealsTo_Optional2_var1 = filteredByCyclesOptional2_var1(meals, LocalTime.of(7, 0), LocalTime.of(12, 0), 2000);
+        mealsTo_Optional2_var1.forEach(System.out::println);
+
+        List<UserMealWithExcess> mealsTo_Optional2_var2 = filteredByCyclesOptional2_var2(meals, LocalTime.of(7, 0), LocalTime.of(12, 0), 2000);
+        mealsTo_Optional2_var2.forEach(System.out::println);
 
         System.out.println(filteredByStreams(meals, LocalTime.of(7, 0), LocalTime.of(12, 0), 2000));
     }
@@ -40,6 +49,57 @@ public class UserMealsUtil {
             if (TimeUtil.isBetweenInclusive(meal.getDateTime().toLocalTime(), startTime, endTime))
                 result.add(new UserMealWithExcess(meal.getDateTime(), meal.getDescription(), meal.getCalories(), caloriesPerDays.get(meal.getDateTime().toLocalDate()) > caloriesPerDay));
         }
+
+        return result;
+    }
+
+    public static List<UserMealWithExcess> filteredByCyclesOptional2_var1(List<UserMeal> meals, LocalTime startTime, LocalTime endTime, int caloriesPerDay) {
+
+        Map<LocalDate, Integer> caloriesPerDays = new HashMap<>();
+        List<UserMealWithExcess> result = new ArrayList<>();
+
+        for (UserMeal meal : meals) {
+            caloriesPerDays.merge(meal.getDateTime().toLocalDate(), meal.getCalories(), Integer::sum);
+            if (TimeUtil.isBetweenInclusive(meal.getDateTime().toLocalTime(), startTime, endTime))
+                result.add(new UserMealWithExcess(meal.getDateTime(), meal.getDescription(), meal.getCalories(), false));
+        }
+
+        try {
+            Field fieldExcess = UserMealWithExcess.class.getDeclaredField("excess");
+            fieldExcess.setAccessible(true);
+
+            Field fieldDateTime = UserMealWithExcess.class.getDeclaredField("dateTime");
+            fieldDateTime.setAccessible(true);
+
+            for (UserMealWithExcess mealWithExcess : result) {
+                if (caloriesPerDays.get(((LocalDateTime) fieldDateTime.get(mealWithExcess)).toLocalDate()) > caloriesPerDay)
+                    fieldExcess.setBoolean(mealWithExcess, true);
+            }
+        }
+        catch (IllegalAccessException | NoSuchFieldException ignored) {}
+
+        return result;
+    }
+
+    public static List<UserMealWithExcess> filteredByCyclesOptional2_var2(List<UserMeal> meals, LocalTime startTime, LocalTime endTime, int caloriesPerDay) {
+
+        Map<LocalDate, Integer> caloriesPerDays = new HashMap<>();
+        List<Callable<Void>> callables = new ArrayList<>();
+        List<UserMealWithExcess> result = Collections.synchronizedList(new ArrayList<>());
+
+        for (UserMeal meal : meals) {
+            caloriesPerDays.merge(meal.getDateTime().toLocalDate(), meal.getCalories(), Integer::sum);
+            if (TimeUtil.isBetweenInclusive(meal.getDateTime().toLocalTime(), startTime, endTime))
+                callables.add(() -> {result.add(new UserMealWithExcess(meal.getDateTime(), meal.getDescription(), meal.getCalories(), caloriesPerDays.get(meal.getDateTime().toLocalDate()) > caloriesPerDay));
+                                     return null;});
+        }
+
+        try {
+            ExecutorService executorService = Executors.newCachedThreadPool();
+            executorService.invokeAll(callables);
+            executorService.shutdown();
+        }
+        catch (InterruptedException ignored) {}
 
         return result;
     }
