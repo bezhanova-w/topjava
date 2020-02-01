@@ -38,6 +38,9 @@ public class UserMealsUtil {
         List<UserMealWithExcess> mealsTo_Optional2_var2 = filteredByCyclesOptional2Var2(meals, LocalTime.of(7, 0), LocalTime.of(12, 0), 2000);
         mealsTo_Optional2_var2.forEach(System.out::println);
 
+        List<UserMealWithExcess> mealsTo_Optional2_var3 = filteredByCyclesOptional2Var3(meals, LocalTime.of(7, 0), LocalTime.of(12, 0), 2000);
+        mealsTo_Optional2_var3.forEach(System.out::println);
+
         System.out.println(filteredByStreams(meals, LocalTime.of(7, 0), LocalTime.of(12, 0), 2000));
 
         System.out.println(filteredByStreamsVar2(meals, LocalTime.of(7, 0), LocalTime.of(12, 0), 2000));
@@ -123,6 +126,39 @@ public class UserMealsUtil {
         }
 
         return result;
+    }
+
+    public static List<UserMealWithExcess> filteredByCyclesOptional2Var3(List<UserMeal> meals, LocalTime startTime, LocalTime endTime, int caloriesPerDay) {
+        //в 1 цикл по исходному списку с использованием рекурсии
+
+        List<UserMealWithExcess> result = new ArrayList<>();
+        Map<LocalDate, Integer> caloriesPerDays = new HashMap<>();
+        Set<Integer> scannedIndexes = new HashSet<>();
+
+        for (int i = 0; i < meals.size(); i++) {
+            doRecursiveCall(i, meals, startTime, endTime, caloriesPerDay, scannedIndexes, caloriesPerDays, result);
+        }
+
+        return result;
+    }
+
+    private static void doRecursiveCall(int i, List<UserMeal> meals, LocalTime startTime, LocalTime endTime, int caloriesPerDay, Set<Integer> scannedIndexes, Map<LocalDate, Integer> caloriesPerDays, List<UserMealWithExcess> result) {
+
+        if (scannedIndexes.contains(i)) return;
+
+        scannedIndexes.add(i);
+
+        UserMeal meal = meals.get(i);
+        caloriesPerDays.merge(meal.getDateTime().toLocalDate(), meal.getCalories(), Integer::sum);
+
+        for (int j = i + 1; j < meals.size(); j++) {
+            doRecursiveCall(j, meals, startTime, endTime, caloriesPerDay, scannedIndexes, caloriesPerDays, result);
+        }
+
+        if (TimeUtil.isBetweenInclusive(meal.getDateTime().toLocalTime(), startTime, endTime)) {
+            boolean excess = caloriesPerDays.get(meal.getDateTime().toLocalDate()) > caloriesPerDay;
+            result.add(createUserMealWithExcess(meal, excess));
+        }
     }
 
     public static List<UserMealWithExcess> filteredByStreams(List<UserMeal> meals, LocalTime startTime, LocalTime endTime, int caloriesPerDay) {
