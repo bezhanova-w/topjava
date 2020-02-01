@@ -8,12 +8,15 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.Month;
 import java.util.*;
-import java.util.concurrent.Callable;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.*;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.BiConsumer;
+import java.util.function.BinaryOperator;
+import java.util.function.Function;
+import java.util.function.Supplier;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class UserMealsUtil {
     public static void main(String[] args) {
@@ -29,16 +32,15 @@ public class UserMealsUtil {
         List<UserMealWithExcess> mealsTo = filteredByCycles(meals, LocalTime.of(7, 0), LocalTime.of(12, 0), 2000);
         mealsTo.forEach(System.out::println);
 
-        List<UserMealWithExcess> mealsTo_Optional2_var1 = filteredByCyclesOptional2_var1(meals, LocalTime.of(7, 0), LocalTime.of(12, 0), 2000);
+        List<UserMealWithExcess> mealsTo_Optional2_var1 = filteredByCyclesOptional2Var1(meals, LocalTime.of(7, 0), LocalTime.of(12, 0), 2000);
         mealsTo_Optional2_var1.forEach(System.out::println);
 
-        List<UserMealWithExcess> mealsTo_Optional2_var2 = filteredByCyclesOptional2_var2(meals, LocalTime.of(7, 0), LocalTime.of(12, 0), 2000);
+        List<UserMealWithExcess> mealsTo_Optional2_var2 = filteredByCyclesOptional2Var2(meals, LocalTime.of(7, 0), LocalTime.of(12, 0), 2000);
         mealsTo_Optional2_var2.forEach(System.out::println);
 
-        List<UserMealWithExcess> mealsTo_Optional2_var3 = filteredByCyclesOptional2_var3(meals, LocalTime.of(7, 0), LocalTime.of(12, 0), 2000);
-        mealsTo_Optional2_var3.forEach(System.out::println);
-
         System.out.println(filteredByStreams(meals, LocalTime.of(7, 0), LocalTime.of(12, 0), 2000));
+
+        System.out.println(filteredByStreamsVar2(meals, LocalTime.of(7, 0), LocalTime.of(12, 0), 2000));
     }
 
     public static List<UserMealWithExcess> filteredByCycles(List<UserMeal> meals, LocalTime startTime, LocalTime endTime, int caloriesPerDay) {
@@ -50,18 +52,19 @@ public class UserMealsUtil {
 
         List<UserMealWithExcess> result = new ArrayList<>();
         for (UserMeal meal : meals) {
-            if (TimeUtil.isBetweenInclusive(meal.getDateTime().toLocalTime(), startTime, endTime))
+            if (TimeUtil.isBetweenInclusive(meal.getDateTime().toLocalTime(), startTime, endTime)) {
                 result.add(new UserMealWithExcess(meal.getDateTime(), meal.getDescription(), meal.getCalories(), caloriesPerDays.get(meal.getDateTime().toLocalDate()) > caloriesPerDay));
+            }
         }
 
         return result;
     }
 
-    public static List<UserMealWithExcess> filteredByCyclesOptional2_var1(List<UserMeal> meals, LocalTime startTime, LocalTime endTime, int caloriesPerDay) {
+    public static List<UserMealWithExcess> filteredByCyclesOptional2Var1(List<UserMeal> meals, LocalTime startTime, LocalTime endTime, int caloriesPerDay) {
         //в 1 цикл по исходному списку. Результат заполняется при выполнении задач, созданных в этом цикле, после отпускания lock'а
 
         Map<LocalDate, Integer> caloriesPerDays = new HashMap<>();
-        List<UserMealWithExcess> result = new CopyOnWriteArrayList<>();
+        List<UserMealWithExcess> result = new ArrayList<>();
 
         ExecutorService executor = Executors.newCachedThreadPool();
 
@@ -70,29 +73,31 @@ public class UserMealsUtil {
 
         for (UserMeal meal : meals) {
             caloriesPerDays.merge(meal.getDateTime().toLocalDate(), meal.getCalories(), Integer::sum);
-            if (TimeUtil.isBetweenInclusive(meal.getDateTime().toLocalTime(), startTime, endTime))
+            if (TimeUtil.isBetweenInclusive(meal.getDateTime().toLocalTime(), startTime, endTime)) {
                 executor.submit(() -> {
                     lock.lock();
                     boolean excess = caloriesPerDays.get(meal.getDateTime().toLocalDate()) > caloriesPerDay;
                     result.add(createUserMealWithExcess(meal, excess));
                     lock.unlock();
                 });
+            }
         }
 
         lock.unlock();
 
-        while (!executor.isTerminated()) {
-            try {
-                Thread.sleep(100);
-                executor.shutdown();
-            } catch (InterruptedException ignored) {
+        executor.shutdown();
+        try {
+            if (!executor.awaitTermination(5, TimeUnit.SECONDS)) {
+                executor.shutdownNow();
             }
+        } catch (InterruptedException ie) {
+            executor.shutdownNow();
         }
 
         return result;
     }
 
-    public static List<UserMealWithExcess> filteredByCyclesOptional2_var2(List<UserMeal> meals, LocalTime startTime, LocalTime endTime, int caloriesPerDay) {
+    public static List<UserMealWithExcess> filteredByCyclesOptional2Var2(List<UserMeal> meals, LocalTime startTime, LocalTime endTime, int caloriesPerDay) {
         //в 1 цикл по исходному списку. Результат заполняется при выполнении отложенных задач, созданных в этом цикле
 
         Map<LocalDate, Integer> caloriesPerDays = new HashMap<>();
@@ -101,12 +106,13 @@ public class UserMealsUtil {
 
         for (UserMeal meal : meals) {
             caloriesPerDays.merge(meal.getDateTime().toLocalDate(), meal.getCalories(), Integer::sum);
-            if (TimeUtil.isBetweenInclusive(meal.getDateTime().toLocalTime(), startTime, endTime))
+            if (TimeUtil.isBetweenInclusive(meal.getDateTime().toLocalTime(), startTime, endTime)) {
                 callables.add(() -> {
                     boolean excess = caloriesPerDays.get(meal.getDateTime().toLocalDate()) > caloriesPerDay;
                     result.add(createUserMealWithExcess(meal, excess));
                     return null;
                 });
+            }
         }
 
         try {
@@ -115,21 +121,6 @@ public class UserMealsUtil {
             executorService.shutdown();
         } catch (InterruptedException ignored) {
         }
-
-        return result;
-    }
-
-    public static List<UserMealWithExcess> filteredByCyclesOptional2_var3(List<UserMeal> meals, LocalTime startTime, LocalTime endTime, int caloriesPerDay) {
-        //в 1 цикл по исходному списку с использованием (добавленных) статического поля и метода класса UserMeal
-
-        List<UserMealWithExcess> result = new ArrayList<>();
-
-        meals.forEach(meal -> {
-            if (TimeUtil.isBetweenInclusive(meal.getDateTime().toLocalTime(), startTime, endTime)) {
-                boolean excess = UserMeal.getCaloriesPerDay(meal.getDateTime().toLocalDate()) > caloriesPerDay;
-                result.add(createUserMealWithExcess(meal, excess));
-            }
-        });
 
         return result;
     }
@@ -148,6 +139,44 @@ public class UserMealsUtil {
                                     .filter((meal) -> TimeUtil.isBetweenInclusive(meal.getDateTime().toLocalTime(), startTime, endTime))
                                     .map((meal) -> createUserMealWithExcess(meal, excess));
                         })
+                        .collect(Collectors.toList());
+    }
+
+    public static List<UserMealWithExcess> filteredByStreamsVar2(List<UserMeal> meals, LocalTime startTime, LocalTime endTime, int caloriesPerDay) {
+        //в 1 проход по meals через stream() с собственным коллектором
+
+        final class FilteredMealsPerDay {
+            private int totalCaloriesPerDay;
+            private ArrayList<UserMeal> list = new ArrayList<>();
+        }
+
+        Supplier<FilteredMealsPerDay> supplier = FilteredMealsPerDay::new;
+
+        BiConsumer<FilteredMealsPerDay, UserMeal> accumulator = ((mealsPerDay, meal) -> {
+            mealsPerDay.totalCaloriesPerDay += meal.getCalories();
+            if (TimeUtil.isBetweenInclusive(meal.getDateTime().toLocalTime(), startTime, endTime)) {
+                mealsPerDay.list.add(meal);
+            }
+        });
+
+        BinaryOperator<FilteredMealsPerDay> combiner = (mealsPerDay1, mealsPerDay2) -> {
+            mealsPerDay1.totalCaloriesPerDay += mealsPerDay2.totalCaloriesPerDay;
+            mealsPerDay1.list.addAll(mealsPerDay2.list);
+            return mealsPerDay1;
+        };
+
+        Function<FilteredMealsPerDay, Stream<UserMealWithExcess>> finisher = mealsPerDay -> {
+            boolean excess = mealsPerDay.totalCaloriesPerDay > caloriesPerDay;
+            return mealsPerDay.list.stream().map(meal -> createUserMealWithExcess(meal, excess));
+        };
+
+        return
+                meals
+                        .stream()
+                        .collect(Collectors.groupingBy(meal -> meal.getDateTime().toLocalDate(), Collector.of(supplier, accumulator, combiner, finisher)))
+                        .values()
+                        .stream()
+                        .flatMap(Function.identity())
                         .collect(Collectors.toList());
     }
 
