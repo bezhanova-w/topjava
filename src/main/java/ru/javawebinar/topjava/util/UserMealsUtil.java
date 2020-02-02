@@ -44,6 +44,8 @@ public class UserMealsUtil {
         System.out.println(filteredByStreams(meals, LocalTime.of(7, 0), LocalTime.of(12, 0), 2000));
 
         System.out.println(filteredByStreamsVar2(meals, LocalTime.of(7, 0), LocalTime.of(12, 0), 2000));
+
+        System.out.println(filteredByStreamsVar3(meals, LocalTime.of(7, 0), LocalTime.of(12, 0), 2000));
     }
 
     public static List<UserMealWithExcess> filteredByCycles(List<UserMeal> meals, LocalTime startTime, LocalTime endTime, int caloriesPerDay) {
@@ -172,7 +174,7 @@ public class UserMealsUtil {
     }
 
     public static List<UserMealWithExcess> filteredByStreamsVar2(List<UserMeal> meals, LocalTime startTime, LocalTime endTime, int caloriesPerDay) {
-        //в 1 проход по meals через stream() с собственным коллектором
+        //в 1 проход по meals через stream() с собственным коллектором и flatMap
 
         final class FilteredMealsPerDay {
             private int totalCaloriesPerDay;
@@ -207,6 +209,40 @@ public class UserMealsUtil {
                         .stream()
                         .flatMap(Function.identity())
                         .collect(Collectors.toList());
+    }
+
+    public static List<UserMealWithExcess> filteredByStreamsVar3(List<UserMeal> meals, LocalTime startTime, LocalTime endTime, int caloriesPerDay) {
+        //в 1 проход по meals через stream() с собственным коллектором
+
+        final class MyCollector {
+
+            private Map<LocalDate, Integer> caloriesPerDays = new HashMap<>();
+            private List<UserMeal> filteredMeals = new ArrayList<>();
+
+            private void accumulate(UserMeal meal) {
+                caloriesPerDays.merge(meal.getDateTime().toLocalDate(), meal.getCalories(), Integer::sum);
+                if (TimeUtil.isBetweenInclusive(meal.getDateTime().toLocalTime(), startTime, endTime)) {
+                    filteredMeals.add(meal);
+                }
+            }
+
+            private MyCollector combine(MyCollector other) {
+                other.caloriesPerDays.forEach((day, calories) -> caloriesPerDays.merge(day, calories, Integer::sum));
+                filteredMeals.addAll(other.filteredMeals);
+                return this;
+            }
+
+            private List<UserMealWithExcess> finish() {
+                return filteredMeals.stream().map(meal -> {
+                    boolean excess = caloriesPerDays.get(meal.getDateTime().toLocalDate()) > caloriesPerDay;
+                    return createUserMealWithExcess(meal, excess);
+                }).collect(Collectors.toList());
+            }
+        }
+
+        return meals
+                .stream()
+                .collect(Collector.of(MyCollector::new, MyCollector::accumulate, MyCollector::combine, MyCollector::finish));
     }
 
     private static UserMealWithExcess createUserMealWithExcess(UserMeal meal, boolean excess) {
