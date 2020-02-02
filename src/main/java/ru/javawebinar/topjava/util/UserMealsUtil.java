@@ -133,27 +133,20 @@ public class UserMealsUtil {
 
         List<UserMealWithExcess> result = new ArrayList<>();
         Map<LocalDate, Integer> caloriesPerDays = new HashMap<>();
-        Set<Integer> scannedIndexes = new HashSet<>();
 
-        for (int i = 0; i < meals.size(); i++) {
-            doRecursiveCall(i, meals, startTime, endTime, caloriesPerDay, scannedIndexes, caloriesPerDays, result);
-        }
+        doRecursiveCall(0, meals, startTime, endTime, caloriesPerDay, caloriesPerDays, result);
 
         return result;
     }
 
-    private static void doRecursiveCall(int i, List<UserMeal> meals, LocalTime startTime, LocalTime endTime, int caloriesPerDay, Set<Integer> scannedIndexes, Map<LocalDate, Integer> caloriesPerDays, List<UserMealWithExcess> result) {
+    private static void doRecursiveCall(int i, List<UserMeal> meals, LocalTime startTime, LocalTime endTime, int caloriesPerDay, Map<LocalDate, Integer> caloriesPerDays, List<UserMealWithExcess> result) {
 
-        if (scannedIndexes.contains(i)) return;
-
-        scannedIndexes.add(i);
+        if (i >= meals.size()) return;
 
         UserMeal meal = meals.get(i);
         caloriesPerDays.merge(meal.getDateTime().toLocalDate(), meal.getCalories(), Integer::sum);
 
-        for (int j = i + 1; j < meals.size(); j++) {
-            doRecursiveCall(j, meals, startTime, endTime, caloriesPerDay, scannedIndexes, caloriesPerDays, result);
-        }
+        doRecursiveCall(i + 1, meals, startTime, endTime, caloriesPerDay, caloriesPerDays, result);
 
         if (TimeUtil.isBetweenInclusive(meal.getDateTime().toLocalTime(), startTime, endTime)) {
             boolean excess = caloriesPerDays.get(meal.getDateTime().toLocalDate()) > caloriesPerDay;
