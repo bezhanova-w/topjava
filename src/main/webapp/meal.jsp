@@ -14,17 +14,17 @@
     <p><input type="text" name="id" hidden value="<c:out value="${requestScope.meal.id}"/>"/></p>
 
     <p><label for="dateTime">Дата/Время</label></p>
-    <p><input type="datetime-local" id="dateTime" name="dateTime" placeholder="Дата/Время"
+    <p><input type="datetime-local" id="dateTime" name="dateTime" placeholder="Дата/Время" required
               value="<c:out value="${requestScope.meal.dateTime}"/>"
               style="width: 400px"/></p>
 
     <p><label for="description">Описание</label></p>
-    <p><input type="text" id="description" name="description" maxlength="120" placeholder="Описание"
+    <p><input type="text" id="description" name="description" minlength="2" maxlength="120" placeholder="Описание" required
               value="<c:out value="${requestScope.meal.description}"/>"
               style="width: 400px"/></p>
 
     <p><label for="calories">Калории</label></p>
-    <p><input type="number" id="calories" name="calories" min="0" step="1" placeholder="1000"
+    <p><input type="number" id="calories" name="calories" min="10" max="5000" step="1" placeholder="1000" required
               value="<c:out value="${requestScope.meal.calories}"/>"
               style="width: 400px"/></p>
 

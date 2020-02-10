@@ -22,7 +22,13 @@ import static org.slf4j.LoggerFactory.getLogger;
 public class MealServlet extends HttpServlet {
     private static final Logger log = getLogger(MealServlet.class);
     private static final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
-    private final Dao<Meal> dao = new MealInMemoryDao();
+    private Dao<Meal> dao;
+
+    @Override
+    public void init() throws ServletException {
+        super.init();
+        dao = new MealInMemoryDao();
+    }
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
