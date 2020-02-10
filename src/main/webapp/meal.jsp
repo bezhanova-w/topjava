@@ -7,8 +7,8 @@
 </head>
 <body style="margin: auto 10%; background-color: #e9ecef; font-family: 'Century Gothic',monospace">
 
-<h2><c:out value="${(requestScope.meal == null || requestScope.meal.isNew()) ? \"Добавить еду\" : \"Редактировать еду\"}"/></h2>
-<pre style="color: red; width: 400px"><c:out value="${(requestScope.criteria != null && !requestScope.criteria.isEmpty()) ? requestScope.criteria : \"\"}"/></pre>
+<h2><c:out
+        value="${(requestScope.meal == null || requestScope.meal.isNew()) ? \"Добавить еду\" : \"Редактировать еду\"}"/></h2>
 
 <form method="POST" action="${pageContext.request.contextPath}/meals">
     <p><input type="text" name="id" hidden value="<c:out value="${requestScope.meal.id}"/>"/></p>
@@ -28,7 +28,8 @@
               value="<c:out value="${requestScope.meal.calories}"/>"
               style="width: 400px"/></p>
 
-    <p><input type="submit" name="submit" value="Отменить" style="width: 100px">
+    <p><input type="button" value="Отменить" onclick="location.href='${pageContext.request.contextPath}/meals'"
+              style="width: 100px">
         <input type="submit" name="submit" value="Сохранить" style="width: 100px"></p>
 </form>
 </body>
