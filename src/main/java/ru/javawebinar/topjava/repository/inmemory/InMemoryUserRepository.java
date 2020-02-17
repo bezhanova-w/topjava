@@ -3,14 +3,12 @@ package ru.javawebinar.topjava.repository.inmemory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
-import ru.javawebinar.topjava.model.AbstractNamedEntity;
 import ru.javawebinar.topjava.model.User;
 import ru.javawebinar.topjava.repository.UserRepository;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Repository
@@ -52,7 +50,7 @@ public class InMemoryUserRepository implements UserRepository {
         log.info("get all users");
         return repository.values()
                 .stream()
-                .sorted(Comparator.comparing((Function<User, String>) AbstractNamedEntity::getName).thenComparing(User::getEmail))
+                .sorted(Comparator.comparing(User::getName).thenComparing(User::getEmail))
                 .collect(Collectors.toList());
     }
 

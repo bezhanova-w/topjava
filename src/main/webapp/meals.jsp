@@ -48,7 +48,7 @@
             </dd>
         </dl>
         <button type="submit">Отфильтровать</button>
-        <button onclick="window.history.back()" type="button">Отменить</button>
+        <button type="reset" onclick="window.location.href='meals'">Отменить</button>
     </form>
 
     <a href="meals?action=create">Add Meal</a>

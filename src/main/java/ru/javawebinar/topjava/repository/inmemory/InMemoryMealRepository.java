@@ -10,6 +10,7 @@ import ru.javawebinar.topjava.util.MealsUtil;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.Month;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -24,10 +25,13 @@ public class InMemoryMealRepository implements MealRepository {
     private AtomicInteger counter = new AtomicInteger(0);
 
     {
-        for (int i = 0; i < MealsUtil.MEALS.size(); i++) {
-            save(MealsUtil.MEALS.get(i), i % 2 == 0 ? InMemoryUserRepository.USER_ID_1
-                    : InMemoryUserRepository.USER_ID_2);
-        }
+        MealsUtil.MEALS.forEach(meal -> save(meal, InMemoryUserRepository.USER_ID_1));
+
+        Arrays.asList(
+                new Meal(LocalDateTime.of(2020, Month.JANUARY, 29, 7, 0), "Завтрак", 600),
+                new Meal(LocalDateTime.of(2020, Month.JANUARY, 29, 12, 0), "Обед", 1000),
+                new Meal(LocalDateTime.of(2020, Month.JANUARY, 29, 18, 0), "Ужин", 500))
+                .forEach(meal -> save(meal, InMemoryUserRepository.USER_ID_2));
     }
 
     @Override
@@ -59,24 +63,23 @@ public class InMemoryMealRepository implements MealRepository {
     }
 
     @Override
-    public Collection<Meal> getAll(int userId) {
+    public List<Meal> getAll(int userId) {
         log.info("get all meals for user {}", userId);
-        Map<Integer, Meal> mealsMap = repository.get(userId);
         return getAllByFilter(userId, meal -> true);
     }
 
     @Override
-    public Collection<Meal> getAllFilteredByDate(int userId, LocalDate startDate, LocalDate endDate) {
+    public List<Meal> getAllFilteredByDate(int userId, LocalDate startDate, LocalDate endDate) {
         log.info("get meals between {} and {} for user {}", startDate, endDate, userId);
         return getAllByFilter(userId, meal -> DateTimeUtil.isBetweenInclusive(meal.getDate(), startDate, endDate));
     }
 
-    private Collection<Meal> getAllByFilter(int userId, Predicate<Meal> filter) {
+    private List<Meal> getAllByFilter(int userId, Predicate<Meal> filter) {
         Map<Integer, Meal> mealsMap = repository.get(userId);
         return mealsMap != null ? mealsMap.values()
                 .stream()
                 .filter(filter)
-                .sorted((o1, o2) -> Objects.compare(o2.getDateTime(), o1.getDateTime(), LocalDateTime::compareTo))
+                .sorted(Comparator.comparing(Meal::getDateTime).reversed())
                 .collect(Collectors.toList())
                 : Collections.emptyList();
     }

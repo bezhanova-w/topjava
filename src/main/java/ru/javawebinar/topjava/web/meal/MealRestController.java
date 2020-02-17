@@ -10,7 +10,7 @@ import ru.javawebinar.topjava.util.MealsUtil;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.Collection;
+import java.util.List;
 
 import static ru.javawebinar.topjava.util.ValidationUtil.assureIdConsistent;
 import static ru.javawebinar.topjava.util.ValidationUtil.checkNew;
@@ -27,14 +27,14 @@ public class MealRestController {
         this.service = service;
     }
 
-    public Collection<MealTo> getAll() {
+    public List<MealTo> getAll() {
         log.info("get all meals");
         return MealsUtil.getTos(service.getAll(authUserId()), authUserCaloriesPerDay());
     }
 
-    public Collection<MealTo> getAllFiltered(LocalDate startDate, LocalDate endDate, LocalTime startTime, LocalTime endTime) {
+    public List<MealTo> getAllFiltered(LocalDate startDate, LocalDate endDate, LocalTime startTime, LocalTime endTime) {
         log.info("get meals filtered by dates {} - {} and times {} - {}", startDate, endDate, startTime, endTime);
-        Collection<Meal> meals = (startDate != null || endDate != null)
+        List<Meal> meals = (startDate != null || endDate != null)
                 ? service.getAllFilteredByDate(authUserId(), startDate, endDate)
                 : service.getAll(authUserId());
         return MealsUtil.getFilteredTos(meals, authUserCaloriesPerDay(), startTime, endTime);
