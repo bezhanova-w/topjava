@@ -1,5 +1,6 @@
 package ru.javawebinar.topjava.service;
 
+import org.junit.AfterClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.bridge.SLF4JBridgeHandler;
@@ -14,8 +15,7 @@ import ru.javawebinar.topjava.model.Meal;
 import ru.javawebinar.topjava.util.exception.NotFoundException;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.List;
 
 import static ru.javawebinar.topjava.MealTestData.*;
@@ -34,13 +34,18 @@ public class MealServiceTest {
         SLF4JBridgeHandler.install();
     }
 
+    @AfterClass
+    public static void doAfterClass() {
+        SLF4JBridgeHandler.uninstall();
+    }
+
     @Autowired
     private MealService service;
 
     @Test
     public void get() {
         Meal meal = service.get(START_USER_MEAL_ID, UserTestData.USER_ID);
-        assertMatch(meal, USER_MEALS.get(0));
+        assertMatch(meal, USER_MEAL_0);
     }
 
     @Test(expected = NotFoundException.class)
@@ -74,16 +79,16 @@ public class MealServiceTest {
         List<Meal> meals = service.getBetweenHalfOpen(LocalDate.of(2020, 1, 1),
                 LocalDate.of(2020, 1, 30),
                 UserTestData.USER_ID);
-        List<Meal> mealsExpected = new ArrayList<>(USER_MEALS.subList(0, 3));
-        Collections.reverse(mealsExpected);
+        List<Meal> mealsExpected = Arrays.asList(USER_MEAL_2, USER_MEAL_1, USER_MEAL_0);
         assertMatch(meals, mealsExpected);
     }
 
     @Test
     public void getAll() {
         List<Meal> all = service.getAll(UserTestData.USER_ID);
-        List<Meal> allExpected = new ArrayList<>(USER_MEALS);
-        Collections.reverse(allExpected);
+        List<Meal> allExpected = Arrays.asList(USER_MEAL_6,
+                USER_MEAL_5, USER_MEAL_4, USER_MEAL_3,
+                USER_MEAL_2, USER_MEAL_1, USER_MEAL_0);
         assertMatch(all, allExpected);
     }
 
@@ -120,7 +125,7 @@ public class MealServiceTest {
     @Test(expected = DataAccessException.class)
     public void duplicateDateTimeCreate() throws Exception {
         Meal newMeal = getNew();
-        newMeal.setDateTime(USER_MEALS.get(0).getDateTime());
+        newMeal.setDateTime(USER_MEAL_0.getDateTime());
         service.create(newMeal, UserTestData.USER_ID);
     }
 }
