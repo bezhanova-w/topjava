@@ -1,5 +1,5 @@
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/b061fa5e049841faacb4d217296408d1)](https://www.codacy.com/manual/bezhanova-w/topjava?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=bezhanova-w/topjava&amp;utm_campaign=Badge_Grade)
-[![Build Status](https://travis-ci.com/bezhanova-w/topjava.svg?branch=master)](https://travis-ci.com/bezhanova-w/topjava)
+[![Build Status](https://travis-ci.com/bezhanova-w/topjava.svg?branch=HW04)](https://travis-ci.com/bezhanova-w/topjava)
 
 Java Enterprise Online Project 
 ===============================
