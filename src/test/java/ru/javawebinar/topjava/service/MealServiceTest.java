@@ -36,7 +36,7 @@ import static ru.javawebinar.topjava.UserTestData.USER_ID;
 public class MealServiceTest {
 
     private static final Logger logger = LoggerFactory.getLogger(MealServiceTest.class);
-    private static final StringBuilder sb = new StringBuilder("\n============== All tests duration: ==============\n");
+    private static final StringBuilder sb = new StringBuilder("\u001B[34m\n========= All tests duration: =========\n\u001B[0m");
 
     @Rule
     public ExpectedException thrown = ExpectedException.none();
@@ -45,7 +45,7 @@ public class MealServiceTest {
     public Stopwatch stopwatch = new Stopwatch() {
         @Override
         protected void finished(long nanos, Description description) {
-            String testDurationAbout = String.format("Test %-27s spent %7d ms", description.getMethodName(), TimeUnit.NANOSECONDS.toMicros(nanos));
+            String testDurationAbout = String.format("\u001B[34m%-27s - %7d ms\u001B[0m", description.getMethodName(), TimeUnit.NANOSECONDS.toMicros(nanos));
             sb.append(testDurationAbout).append("\n");
             logger.info(testDurationAbout);
         }
