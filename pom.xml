@@ -182,7 +182,9 @@
                 <dependency>
                     <groupId>org.hsqldb</groupId>
                     <artifactId>hsqldb</artifactId>
-                    <version>2.3.4</version>
+                    <!--<version>2.3.4</version>-->
+                    <!--hsqldb.org : Version 2.4.1 for Java 8 supports java.time classes in JDBC..-->
+                    <version>2.4.1</version>
                 </dependency>
             </dependencies>
         </profile>
