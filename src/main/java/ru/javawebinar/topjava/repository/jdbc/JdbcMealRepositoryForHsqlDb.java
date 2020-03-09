@@ -10,8 +10,8 @@ import ru.javawebinar.topjava.Profiles;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 
-@Profile(Profiles.HSQL_DB)
 @Repository
+@Profile(Profiles.HSQL_DB)
 public class JdbcMealRepositoryForHsqlDb extends JdbcMealRepository<Timestamp> {
 
     @Autowired

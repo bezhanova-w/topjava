@@ -1,22 +1,16 @@
-package ru.javawebinar.topjava.service;
+package ru.javawebinar.topjava.service.datajpa;
 
 import org.junit.Assert;
 import org.springframework.test.context.ActiveProfiles;
 import ru.javawebinar.topjava.Profiles;
 import ru.javawebinar.topjava.model.Meal;
+import ru.javawebinar.topjava.service.AbstractMealServiceTest;
 import ru.javawebinar.topjava.util.exception.NotFoundException;
-import java.lang.invoke.MethodHandles;
 import static ru.javawebinar.topjava.MealTestData.*;
 import static ru.javawebinar.topjava.UserTestData.*;
 
 @ActiveProfiles(Profiles.DATAJPA)
-public class MealDataJpaServiceTest extends AbstractMealServiceTest{
-
-    static {
-        //https://stackoverflow.com/questions/936684/getting-the-class-name-from-a-static-method-in-java
-        className = MethodHandles.lookup().lookupClass().getSimpleName();
-    }
-
+public class DataJpaMealServiceTest extends AbstractMealServiceTest {
     @Override
     public void getWithUser() throws Exception {
         Meal actual = service.getWithUser(ADMIN_MEAL_ID, ADMIN_ID);

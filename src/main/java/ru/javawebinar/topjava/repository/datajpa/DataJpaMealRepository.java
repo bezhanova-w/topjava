@@ -1,10 +1,8 @@
 package ru.javawebinar.topjava.repository.datajpa;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
-import ru.javawebinar.topjava.Profiles;
 import ru.javawebinar.topjava.model.Meal;
 import ru.javawebinar.topjava.repository.MealRepository;
 import java.time.LocalDateTime;
@@ -12,7 +10,6 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-@Profile(Profiles.DATAJPA)
 public class DataJpaMealRepository implements MealRepository {
 
     @Autowired

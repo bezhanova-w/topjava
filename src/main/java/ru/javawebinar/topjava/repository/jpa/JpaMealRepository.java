@@ -1,9 +1,7 @@
 package ru.javawebinar.topjava.repository.jpa;
 
-import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
-import ru.javawebinar.topjava.Profiles;
 import ru.javawebinar.topjava.model.Meal;
 import ru.javawebinar.topjava.model.User;
 import ru.javawebinar.topjava.repository.MealRepository;
@@ -14,7 +12,6 @@ import java.util.List;
 
 @Repository
 @Transactional(readOnly = true)
-@Profile(Profiles.JPA)
 public class JpaMealRepository implements MealRepository {
 
     @PersistenceContext

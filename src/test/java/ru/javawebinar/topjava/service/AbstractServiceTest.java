@@ -2,10 +2,14 @@ package ru.javawebinar.topjava.service;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Rule;
+import org.junit.rules.ExternalResource;
 import org.junit.rules.Stopwatch;
+import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
 import org.junit.runner.RunWith;
+import org.junit.runners.model.Statement;
 import org.slf4j.Logger;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
@@ -26,10 +30,23 @@ import static org.slf4j.LoggerFactory.getLogger;
 public abstract class AbstractServiceTest{
 
     private static final Logger log = getLogger("result");
-
     private static StringBuilder results = new StringBuilder();
 
-    protected static String className = "Test";
+    @ClassRule
+    public static final TestWatcher testResults = new TestWatcher() {
+        @Override
+        protected void starting(Description description) {
+            results.setLength(0);
+        }
+
+        @Override
+        protected void finished(Description description) {
+            log.info("\n--------------------------------------" +
+                    String.format("%n%-25s Duration, ms", description.getTestClass().getSimpleName()) +
+                    "\n--------------------------------------" +
+                    results +
+                    "\n--------------------------------------");        }
+    };
 
     @Rule
     // http://stackoverflow.com/questions/14892125/what-is-the-best-practice-to-determine-the-execution-time-of-the-bussiness-relev
@@ -41,19 +58,4 @@ public abstract class AbstractServiceTest{
             log.info(result + " ms\n");
         }
     };
-
-    @BeforeClass
-    public static void initResults() {
-        results.setLength(0);
-        className = "Test";
-    }
-
-    @AfterClass
-    public static void printResult() {
-        log.info("\n--------------------------------------" +
-                String.format("%n%-25s Duration, ms", className) +
-                "\n--------------------------------------" +
-                results +
-                "\n--------------------------------------");
-    }
 }

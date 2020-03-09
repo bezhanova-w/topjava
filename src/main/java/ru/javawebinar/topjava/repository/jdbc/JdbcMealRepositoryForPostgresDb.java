@@ -9,8 +9,8 @@ import ru.javawebinar.topjava.Profiles;
 
 import java.time.LocalDateTime;
 
-@Profile(Profiles.POSTGRES_DB)
 @Repository
+@Profile(Profiles.POSTGRES_DB)
 public class JdbcMealRepositoryForPostgresDb extends JdbcMealRepository<LocalDateTime> {
 
     @Autowired
