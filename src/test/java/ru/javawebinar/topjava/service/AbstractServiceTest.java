@@ -35,17 +35,14 @@ public abstract class AbstractServiceTest{
     @ClassRule
     public static final TestWatcher testResults = new TestWatcher() {
         @Override
-        protected void starting(Description description) {
-            results.setLength(0);
-        }
-
-        @Override
         protected void finished(Description description) {
             log.info("\n--------------------------------------" +
                     String.format("%n%-25s Duration, ms", description.getTestClass().getSimpleName()) +
                     "\n--------------------------------------" +
                     results +
-                    "\n--------------------------------------");        }
+                    "\n--------------------------------------");
+            results.setLength(0);
+        }
     };
 
     @Rule

@@ -17,6 +17,7 @@ public abstract class AbstractUserServiceTest extends AbstractServiceTest{
     @Autowired
     protected UserService service;
 
+    @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     @Autowired
     private UserRepository repository;
 

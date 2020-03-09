@@ -16,6 +16,7 @@ public abstract class AbstractMealServiceTest extends AbstractServiceTest{
     @Autowired
     protected MealService service;
 
+    @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     @Autowired
     private MealRepository repository;
 
