@@ -1,10 +1,21 @@
 package ru.javawebinar.topjava.util;
 
 
+import org.springframework.util.CollectionUtils;
 import ru.javawebinar.topjava.model.AbstractBaseEntity;
 import ru.javawebinar.topjava.util.exception.NotFoundException;
 
+import javax.validation.*;
+import java.util.Set;
+
 public class ValidationUtil {
+
+    private static final Validator validator;
+
+    static {
+        ValidatorFactory validatorFactory = Validation.buildDefaultValidatorFactory();
+        validator = validatorFactory.getValidator();
+    }
 
     private ValidationUtil() {
     }
@@ -53,5 +64,12 @@ public class ValidationUtil {
             result = cause;
         }
         return result;
+    }
+
+    public static <T> void validate(T t){
+        Set<ConstraintViolation<T>> violations = validator.validate(t);
+        if (!CollectionUtils.isEmpty(violations)) {
+            throw new ConstraintViolationException(violations);
+        }
     }
 }
