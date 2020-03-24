@@ -8,9 +8,9 @@
          http://www.springframework.org/schema/cache/spring-cache.xsd">
 <!--
     <cache:annotation-driven cache-manager="noOpCacheManager"/>
-
-    <bean id="noOpCacheManager" class="org.springframework.cache.support.NoOpCacheManager"></bean>
 -->
+    <bean id="noOpCacheManager" class="org.springframework.cache.support.NoOpCacheManager"/>
+
     <beans profile="jpa,datajpa">
         <bean class="org.springframework.beans.factory.config.PropertyOverrideConfigurer">
             <property name="location" value="classpath:beanOverride.cfg"/>
