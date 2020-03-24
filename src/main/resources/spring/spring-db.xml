@@ -99,6 +99,11 @@
                     <entry key="#{T(org.hibernate.cfg.AvailableSettings).HBM2DDL_SCRIPTS_DROP_TARGET}" value="${TOPJAVA_ROOT}/config/ddl/drop.ddl"/>
                     <entry key="#{T(org.hibernate.cfg.AvailableSettings).HBM2DDL_AUTO}" value="create"/>
 -->
+                    <!--https://docs.jboss.org/hibernate/stable/validator/reference/en-US/html_single/#validator-checkconstraints-orm-hibernateevent
+                        https://ru.stackoverflow.com/questions/415339/spring-entitymanagerfactory-%D0%9A%D0%B0%D0%BA-%D0%BF%D0%BE%D0%B4%D0%BA%D0%BB%D1%8E%D1%87%D0%B8%D1%82%D1%8C-jpa
+                    -->
+                    <entry key="javax.persistence.validation.group.pre-persist" value="ru.javawebinar.topjava.util.OnlyForJpaValidation, javax.validation.groups.Default"/>
+                    <entry key="javax.persistence.validation.group.pre-update" value="ru.javawebinar.topjava.util.OnlyForJpaValidation, javax.validation.groups.Default"/>
                 </map>
             </property>
 
@@ -112,7 +117,7 @@
         <bean id="transactionManager" class="org.springframework.orm.jpa.JpaTransactionManager"
               p:entityManagerFactory-ref="entityManagerFactory"/>
 
-        <bean class="ru.javawebinar.topjava.repository.JpaUtil"/>
+        <bean id="jpaUtil" class="ru.javawebinar.topjava.repository.JpaUtil"/>
     </beans>
 
     <beans profile="jpa">

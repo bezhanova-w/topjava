@@ -3,6 +3,7 @@ package ru.javawebinar.topjava.model;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 import org.hibernate.validator.constraints.Range;
+import ru.javawebinar.topjava.util.OnlyForJpaValidation;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
@@ -109,7 +110,4 @@ public class Meal extends AbstractBaseEntity {
                 ", calories=" + calories +
                 '}';
     }
-}
-
-interface OnlyForJpaValidation {
 }
