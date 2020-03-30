@@ -8,18 +8,21 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import ru.javawebinar.topjava.MealTestData;
 import ru.javawebinar.topjava.model.Meal;
 import ru.javawebinar.topjava.service.MealService;
+import ru.javawebinar.topjava.to.MealTo;
 import ru.javawebinar.topjava.util.exception.NotFoundException;
 import ru.javawebinar.topjava.web.AbstractControllerTest;
 import ru.javawebinar.topjava.web.json.JsonUtil;
 
 import java.util.List;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static ru.javawebinar.topjava.MealTestData.*;
 import static ru.javawebinar.topjava.TestUtil.readFromJson;
+import static ru.javawebinar.topjava.TestUtil.readListFromJsonMvcResult;
 import static ru.javawebinar.topjava.UserTestData.*;
 import static ru.javawebinar.topjava.util.MealsUtil.*;
 
@@ -35,7 +38,9 @@ class MealRestControllerTest extends AbstractControllerTest {
         perform(MockMvcRequestBuilders.get(REST_URL))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-                .andExpect(MEAL_TO_MATCHER.contentJson(getTos(MEALS, USER.getCaloriesPerDay())));
+                .andExpect(result -> assertThat(readListFromJsonMvcResult(result, MealTo.class)
+                        .equals(getTos(MEALS, USER.getCaloriesPerDay()))));
+                // .andExpect(MEAL_TO_MATCHER.contentJson(getTos(MEALS, USER.getCaloriesPerDay()));
     }
 
     @Test
@@ -93,21 +98,27 @@ class MealRestControllerTest extends AbstractControllerTest {
                 .andExpect(status().isOk())
                 .andDo(print())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-                .andExpect(MEAL_TO_MATCHER.contentJson(List.of(createTo(MEAL5, true),
-                                                               createTo(MEAL4, true),
-                                                               createTo(MEAL1, false))));
+                .andExpect(result -> assertThat(readListFromJsonMvcResult(result, MealTo.class)
+                                                .equals(List.of(createTo(MEAL5, true),
+                                                                createTo(MEAL4, true),
+                                                                createTo(MEAL1, false)))));
+                // .andExpect(MEAL_TO_MATCHER.contentJson(List.of(createTo(MEAL5, true),
+                //                                                createTo(MEAL4, true),
+                //                                                createTo(MEAL1, false))));
     }
 
     @Test
     void getBetweenWithNullDatesTimes() throws Exception {
         perform(MockMvcRequestBuilders.get(REST_URL + "filter")
                 .param("startDate", "")
-               // .param("startTime", "")
-               // .param("endDate", "")
+                // .param("startTime", "")
+                // .param("endDate", "")
                 .param("endTime", ""))
                 .andExpect(status().isOk())
                 .andDo(print())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-                .andExpect(MEAL_TO_MATCHER.contentJson(getTos(MEALS, USER.getCaloriesPerDay())));
+                .andExpect(result -> assertThat(readListFromJsonMvcResult(result, MealTo.class)
+                                                .equals(getTos(MEALS, USER.getCaloriesPerDay()))));
+                // .andExpect(MEAL_TO_MATCHER.contentJson(getTos(MEALS, USER.getCaloriesPerDay())));
     }
 }
