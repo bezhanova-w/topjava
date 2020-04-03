@@ -40,3 +40,23 @@ $(function () {
         }
     );
 });
+
+function updateTable() {
+    updateTableCommon();
+}
+
+function updateEnabled(checkbox) {
+    const checked = checkbox.checked;
+    let tr = $(checkbox.parentElement.parentElement);
+
+    $.ajax({
+        type: "PUT",
+        url: context.ajaxUrl + tr.attr("id") + "/enabled",
+        data: JSON.stringify(checked)
+    }).done(function() {
+        tr.attr("data-userEnabled", checked);
+        successNoty(checked ? "Disabled" : "Enabled");
+    }).fail(function() {
+        $(checkbox).prop('checked', !checked);
+    });
+}
