@@ -56,9 +56,9 @@ public class AdminRestController extends AbstractUserController {
     }
 
     @Override
-    @PutMapping(value = "/{id}/enabled", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(value = HttpStatus.NO_CONTENT)
-    public void updateEnabled(@RequestBody String enabled, @PathVariable int id) {
+    public void updateEnabled(@RequestParam boolean enabled, @PathVariable int id) {
         super.updateEnabled(enabled, id);
     }
 }

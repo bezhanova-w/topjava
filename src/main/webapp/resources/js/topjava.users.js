@@ -50,12 +50,12 @@ function updateEnabled(checkbox) {
     let tr = $(checkbox.parentElement.parentElement);
 
     $.ajax({
-        type: "PUT",
-        url: context.ajaxUrl + tr.attr("id") + "/enabled",
-        data: JSON.stringify(checked)
+        type: "POST",
+        url: context.ajaxUrl + tr.attr("id"),
+        data: "enabled=" + checked
     }).done(function() {
         tr.attr("data-userEnabled", checked);
-        successNoty(checked ? "Disabled" : "Enabled");
+        successNoty(checked ? "Enabled" : "Disabled");
     }).fail(function() {
         $(checkbox).prop('checked', !checked);
     });
